@@ -184,7 +184,11 @@
               <tbody>
                 <tr>
                   <td>Lighting</td>
-                  <td>{{status["lightCyc"]}}</td>
+                  <td>
+                    {% if status["lightCyc"] == 1 %} 18/6
+                    {% elif status["lightCyc"] == 2 %} 12/12
+                    {% endif %}
+                  </td>
                 </tr>
                 <tr data-toggle="tooltip" data-placement="top" title="Pumping starts everytime the soil humidity falls to {{status['pumpCyc']}}%.">
                   <td>Pumping</td>
@@ -192,11 +196,19 @@
                 </tr>
                 <tr>
                   <td>Aux. Fan 1</td>
-                  <td>{{status["aux1Cyc"]}}</td>
+                  <td>
+                    {% if status["aux1Cyc"] == 1 %} 18/6
+                    {% elif status["aux1Cyc"] == 2 %} 12/12
+                    {% endif %}
+                  </td>
                 </tr>
                 <tr>
                   <td>Aux. Fan 2</td>
-                  <td>{{status["aux2Cyc"]}}</td>
+                  <td>
+                    {% if status["aux2Cyc"] == 1 %} 18/6
+                    {% elif status["aux1Cyc"] == 2 %} 12/12
+                    {% endif %}
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -378,9 +390,13 @@
                     <td>Lighting</td>
                     <td>
                       <select name="lightCyc" id="lightCyc">
-                        <option value="{{status['lightCyc']}}" selected hidden>{{status['lightCyc']}}</option>
-                        <option value="18/6">18/6</option>
-                        <option value="12/12">12/12</option>
+                        <option value="{{status['lightCyc']}}" selected hidden>
+                          {% if status["lightCyc"] == 1 %} 18/6
+                          {% elif status["lightCyc"] == 2 %} 12/12
+                          {% endif %}
+                        </option>
+                        <option value="1">18/6</option>
+                        <option value="2">12/12</option>
                       </select>
                     </td>
                   </tr>
@@ -400,9 +416,13 @@
                     <td>Auxillary Fan 1</td>
                     <td>
                       <select name="aux1Cyc" id="aux1Cyc">
-                        <option value="{{status['aux1Cyc']}}" selected hidden>{{status['aux1Cyc']}}</option>
-                        <option value="18/6">18/6</option>
-                        <option value="12/12">12/12</option>
+                        <option value="{{status['aux1Cyc']}}" selected hidden>
+                          {% if status["aux1Cyc"] == 1 %} 18/6
+                          {% elif status["aux1Cyc"] == 2 %} 12/12
+                          {% endif %}
+                        </option>
+                        <option value="1">18/6</option>
+                        <option value="2">12/12</option>
                       </select>
                     </td>
                   </tr>
@@ -410,9 +430,13 @@
                     <td>Aux. Fan 2</td>
                     <td>
                       <select name="aux2Cyc" id="aux2Cyc">
-                        <option value="{{status['aux2Cyc']}}" selected hidden>{{status['aux2Cyc']}}</option>
-                        <option value="18/6">18/6</option>
-                        <option value="12/12">12/12</option>
+                        <option value="{{status['aux2Cyc']}}" selected hidden>
+                          {% if status["aux2Cyc"] == 1 %} 18/6
+                          {% elif status["aux2Cyc"] == 2 %} 12/12
+                          {% endif %}
+                        </option>
+                        <option value="1">18/6</option>
+                        <option value="2">12/12</option>
                       </select>
                     </td>
                   </tr>

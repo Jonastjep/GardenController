@@ -1,0 +1,13 @@
+MQ135
+https://circuitdigest.com/microcontroller-projects/interfacing-mq135-gas-sensor-with-arduino-to-measure-co2-levels-in-ppm
+
+https://blog.asksensors.com/air-quality-sensor-mq135-cloud-mqtt/
+
+Soil Hum 
+https://www.electronicwings.com/esp32/soil-moisture-sensor-interfacing-with-esp32
+
+BMP/E 280
+https://randomnerdtutorials.com/esp32-bme280-arduino-ide-pressure-temperature-humidity/
+
+DHT11
+https://randomnerdtutorials.com/esp32-dht11-dht22-temperature-humidity-sensor-arduino-ide/

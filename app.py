@@ -18,11 +18,13 @@ status = {
     "temp_rec": 0,
     "soil_rec": 0,
     "co2_rec": 0,
-
-    "lightCyc": "18/6",
+    
+    # there are two available cycles represented by ints: 18h/6h is 1; 12h/12h is 2; 
+    # You can add more and then change the code in index.html and the arduino script.
+    "lightCyc": 1,
     "pumpCyc": 20,
-    "aux1Cyc": "18/6",
-    "aux2Cyc": "18/6",
+    "aux1Cyc": 1,
+    "aux2Cyc": 1,
     }
  
 @app.route("/", methods=['GET', 'POST'])
@@ -42,10 +44,10 @@ def index():
             status['co2_rec'] = int(request.form.get('co2_rec'))
 
         elif request.form["form_id"] == "cycles":
-            status['lightCyc'] = (request.form.get('lightCyc'))
+            status['lightCyc'] = int(request.form.get('lightCyc'))
             status['pumpCyc'] = int(request.form.get('pumpCyc'))
-            status['aux1Cyc'] = (request.form.get('aux1Cyc'))
-            status['aux2Cyc'] = (request.form.get('aux2Cyc'))
+            status['aux1Cyc'] = int(request.form.get('aux1Cyc'))
+            status['aux2Cyc'] = int(request.form.get('aux2Cyc'))
             
         return redirect('/#navigbar')
     
