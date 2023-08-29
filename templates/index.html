@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+  <meta charset="utf-8">
+
+  <title>Garden Control</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.css')}}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/font-awesome-4.7.0/css/font-awesome.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  <script src="static/js/jquery-3.6.0.min.js"></script>
+  <script src="static/js/bootstrap.js"></script>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+</head>
+
+<body>
+
+  <!-- ENTRANCE -->
+  <div id="intro">
+    <div class="mask container-fuid" style="background-color: rgba(0, 0, 0, 0.5);height:100vh;">
+      <div class="col-12 ms-auto text-center" id="title">
+        <h3>Hi! Welcome to the </h3>
+        <h1 class="display-1" style="margin-bottom:1cm;">Garden Control</h1>
+        <a class="btn btn-outline-light" href="#navigbar" role="button">Scroll or Click to Access Controls</a>
+      </div>
+    </div>
+  </div>
+  <!-- ENTRANCE -->
+
+  <!-- NAVBAR -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top" id="navigbar">
+    <div class="container-fluid">
+      <a class="navbar-brand wait" href="#">Garden Control</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="#">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#Controls">Controls</a>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown"
+              aria-expanded="false">
+              Data
+            </a>
+            <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDropdown">
+              <li><a class="dropdown-item" href="#hum" onclick="show3();">Humidy</a></li>
+              <li>
+                <hr class="dropdown-divider">
+              </li>
+              <li><a class="dropdown-item" href="#temp" onclick="show4();">Temperature</a></li>
+              <li>
+                <hr class="dropdown-divider">
+              </li>
+              <li><a class="dropdown-item" href="#gas" onclick="show5();">CO2 ppm</a></li>
+              <li>
+                <hr class="dropdown-divider">
+              </li>
+              <li><a class="dropdown-item" href="#alldata" onclick="show6();">All data</a></li>
+            </ul>
+          </li>
+        </ul>
+
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="https://github.com/Jonastjep/" target="_blank"><span
+                class="fa fa-github"></span></a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+  <!-- NAVBAR -->
+
+  <!-- CONTROL -->
+  <span id="Controls"></span>
+  <div class="container py-5">
+    <div class="row text-center">
+
+      <div class="col-lg-6 col-md-8 mx-auto">
+        <h1 class="fw-light">Controls</h1>
+        <p class="lead text-muted">
+          This section is a description of my scientific and technical endeavours as well as a dive into my passions for
+          travelling, music, human health and rights, and more...
+        </p>
+      </div>
+    </div>
+
+
+    <div class="row">
+      <!-- the name part has to be individual for every button system created -->
+      <div class="btn-group" role="group" aria-label="Basic radio toggle button group">
+        <input type="radio" class="btn-check" name="btnradio1" id="btnradio1" autocomplete="off" onclick="show1();"
+          checked>
+        <label class="btn btn-outline-dark" for="btnradio1">Current Status</label>
+
+        <input type="radio" class="btn-check" name="btnradio1" id="btnradio2" onclick="show2();" autocomplete="off">
+        <label class="btn btn-outline-dark" for="btnradio2">Hardware Control</label>
+
+        <input type="radio" class="btn-check" name="btnradio1" id="btnradio7" onclick="show7();" autocomplete="off">
+        <label class="btn btn-outline-dark" for="btnradio7">Cycles Control</label>
+      </div>
+
+      <!-- First part of about -->
+      <div class="container" id="div1" class="">
+        <div class="row py-4 align-items-center">
+          <div class="col-12 ms-auto">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th scope="col">Hardware</th>
+                  <th scope="col">Status</th>
+                </tr>
+              </thead>
+            
+              <tbody>
+                <tr>
+                  <td>Exhaust Fan</td>
+                  <td>
+                    {% if status["exh_stat"] != 0 %} {{status["exh_stat"]}}%
+                    {% else %} OFF
+                    {% endif %}
+                  </td>
+                </tr>
+                <tr>
+                  <td>Humidifier</td>
+                  <td>
+                    {% if status["hum_stat"] != 0 %} {{status["hum_stat"]}}%
+                    {% else %} OFF
+                    {% endif %}
+                  </td>
+                </tr>
+                <tr>
+                  <td>Aux. Fan 1</td>
+                  <td>
+                    {% if status["aux1_stat"] != 0 %} {{status["aux1_stat"]}}%
+                    {% else %} OFF
+                    {% endif %}
+                  </td>
+                </tr>
+                <tr>
+                  <td>Aux. Fan 2</td>
+                  <td>{{"ON" if status["aux2_stat"] else "OFF"}}</td>
+                </tr>
+                <tr>
+                  <td>Lighting</td>
+                  <td>{{"ON" if status["light_stat"] else "OFF"}}</td>
+                </tr>
+                <tr>
+                  <td>Pump</td>
+                  <td>
+                    {% if status["pump_stat"] != 0 %} {{status["pump_stat"]}}s
+                    {% else %} OFF
+                    {% endif %}
+                  </td>
+                </tr>
+                <tr>
+                  <td>Air Hum./Temp. Recording</td>
+                  <td>{{"ON" if status["temp_rec"] else "OFF"}}</td>
+                </tr>
+                <tr>
+                  <td>Soil Hum. Recording</td>
+                  <td>{{"ON" if status["soil_rec"] else "OFF"}}</td>
+                </tr>
+                <tr>
+                  <td>Gas PPM Recording</td>
+                  <td>{{"ON" if status["co2_rec"] else "OFF"}}</td>
+                </tr>
+                
+              </tbody>
+
+              <thead>
+                <tr>
+                  <th scope="col">Cycles</th>
+                  <th scope="col">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Lighting</td>
+                  <td>{{status["lightCyc"]}}</td>
+                </tr>
+                <tr data-toggle="tooltip" data-placement="top" title="Pumping starts everytime the soil humidity falls to {{status['pumpCyc']}}%.">
+                  <td>Pumping</td>
+                  <td>{{status["pumpCyc"]}}%</td>
+                </tr>
+                <tr>
+                  <td>Aux. Fan 1</td>
+                  <td>{{status["aux1Cyc"]}}</td>
+                </tr>
+                <tr>
+                  <td>Aux. Fan 2</td>
+                  <td>{{status["aux2Cyc"]}}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Second part of control -->
+      <div class="container" id="div2" class="hide py-4">
+        <form method="POST">
+          <input type="hidden" name="form_id" value="hardware">
+          <div class="row py-4 align-items-center">
+            <div class="col-12 ms-auto">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th scope="col">Hardware</th>
+                    <th scope="col">Status</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  <tr>
+                    <td>Exhaust Fan</td>
+                    <td>
+                      <select name="exh_stat" id="exh_stat">
+                        <option value="{{status['exh_stat']}}" selected hidden>
+                          {% if status["exh_stat"] != 0 %} {{status["exh_stat"]}}%
+                          {% else %} OFF
+                          {% endif %}
+                        </option>
+                        <option value="0">OFF</option>
+                        <option value="20">20%</option>
+                        <option value="40">40%</option>
+                        <option value="60">60%</option>
+                        <option value="80">80%</option>
+                        <option value="100">100%</option>
+                      </select>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Humidifier</td>
+                    <td>
+                      <select name="hum_stat" id="hum_stat">
+                        <option value="{{status['hum_stat']}}" selected hidden>
+                          {% if status["hum_stat"] != 0 %} {{status["hum_stat"]}}%
+                          {% else %} OFF
+                          {% endif %}
+                        </option>
+                        <option value="0">OFF</option>
+                        <option value="30">30%</option>
+                        <option value="40">40%</option>
+                        <option value="50">50%</option>
+                        <option value="55">55%</option>
+                        <option value="60">60%</option>
+                        <option value="65">65%</option>
+                        <option value="70">70%</option>
+                      </select>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Aux. Fan 1</td>
+                    <td>
+                      <select name="aux1_stat" id="aux1_stat">
+                        <option value="{{status['aux1_stat']}}" selected hidden>
+                          {% if status["aux1_stat"] != 0 %} {{status["aux1_stat"]}}%
+                          {% else %} OFF
+                          {% endif %}
+                        </option>
+                        <option value="0">OFF</option>
+                        <option value="20">20%</option>
+                        <option value="40">40%</option>
+                        <option value="60">60%</option>
+                        <option value="80">80%</option>
+                        <option value="100">100%</option>
+                      </select>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Aux. Fan 2</td>
+                    <td>
+                      <select name="aux2_stat" id="aux2_stat">
+                        <option value="{{status['aux2_stat']}}" selected hidden>
+                          {{"ON" if status["aux2_stat"] else "OFF"}}
+                        </option>
+                        <option value="1">ON</option>
+                        <option value="0">OFF</option>
+                      </select>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Lighting</td>
+                    <td>
+                      <select name="light_stat" id="light_stat">
+                        <option value="{{status['light_stat']}}" selected hidden>{{"ON" if status["light_stat"] else "OFF"}}</option>
+                        <option value="1">ON</option>
+                        <option value="0">OFF</option>
+                      </select>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Pump</td>
+                    <td>
+                      <select name="pump_stat" id="pump_stat">
+                        <option value="{{status['pump_stat']}}" selected hidden>
+                          {% if status["pump_stat"] != 0 %} {{status["pump_stat"]}}s
+                          {% else %} OFF
+                          {% endif %}
+                        </option>
+                        <option value="0">OFF</option>
+                        <option value="2">2s</option>
+                        <option value="4">4s</option>
+                        <option value="6">6s</option>
+                        <option value="8">8s</option>
+                        <option value="10">10s</option>
+                      </select>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Air Hum./Temp. Recording</td>
+                    <td>
+                      <select name="temp_rec" id="temp_rec">
+                        <option value="{{status['temp_rec']}}" selected hidden>{{"ON" if status["temp_rec"] else "OFF"}}</option>
+                        <option value="1">ON</option>
+                        <option value="0">OFF</option>
+                      </select>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Soil Hum. Recording</td>
+                    <td>
+                      <select name="soil_rec" id="soil_rec">
+                        <option value="{{status['soil_rec']}}" selected hidden>{{"ON" if status["soil_rec"] else "OFF"}}</option>
+                        <option value="1">ON</option>
+                        <option value="0">OFF</option>
+                      </select>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Gas PPM Recording</td>
+                    <td>
+                      <select name="co2_rec" id="co2_rec">
+                        <option value="{{status['co2_rec']}}" selected hidden>{{"ON" if status["co2_rec"] else "OFF"}}</option>
+                        <option value="1">ON</option>
+                        <option value="0">OFF</option>
+                      </select>
+                    </td>
+                  </tr>
+                  
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <!-- SUBMIT BUTTON -->
+          <div class="row py-4">
+            <div class="col-12 text-center big_txt">
+              <input class="btn btn-outline-dark btn-md" type="submit" value="Submit Hardware Changes">
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- Third  part of control -->
+      <div class="container" id="div7" class="hide py-4">
+        <form method="POST">
+          <input type="hidden" name="form_id" value="cycles">
+          <div class="row py-4 align-items-center">
+            <div class="col-12 ms-auto">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th scope="col">Cycles</th>
+                    <th scope="col">Status</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  <tr>
+                    <td>Lighting</td>
+                    <td>
+                      <select name="lightCyc" id="lightCyc">
+                        <option value="{{status['lightCyc']}}" selected hidden>{{status['lightCyc']}}</option>
+                        <option value="18/6">18/6</option>
+                        <option value="12/12">12/12</option>
+                      </select>
+                    </td>
+                  </tr>
+                  <tr data-toggle="tooltip" data-placement="top" title="Pumping starts everytime the soil humidity reaches the chosen value.">
+                    <td>Pumping</td>
+                    <td>
+                      <select name="pumpCyc" id="pumpCyc">
+                        <option value="{{status['pumpCyc']}}" selected hidden>{{status['pumpCyc']}}%</option>
+                        <option value="40">40%</option>
+                        <option value="30">30%</option>
+                        <option value="20">20%</option>
+                        <option value="10">10%</option>
+                      </select>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Auxillary Fan 1</td>
+                    <td>
+                      <select name="aux1Cyc" id="aux1Cyc">
+                        <option value="{{status['aux1Cyc']}}" selected hidden>{{status['aux1Cyc']}}</option>
+                        <option value="18/6">18/6</option>
+                        <option value="12/12">12/12</option>
+                      </select>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Aux. Fan 2</td>
+                    <td>
+                      <select name="aux2Cyc" id="aux2Cyc">
+                        <option value="{{status['aux2Cyc']}}" selected hidden>{{status['aux2Cyc']}}</option>
+                        <option value="18/6">18/6</option>
+                        <option value="12/12">12/12</option>
+                      </select>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <!-- SUBMIT BUTTON -->
+          <div class="row py-4">
+            <div class="col-12 text-center big_txt">
+              <input class="btn btn-outline-dark btn-md" type="submit" value="Submit Cycle Changes">
+            </div>
+          </div>
+        </form>
+      </div>
+
+    </div>
+
+  </div>
+  <!-- ABOUT ME -->
+
+  <div id="transi_2">
+    <div class="mask container-fuid" style="background-color: rgba(0, 0, 0, 0.5);height:20vh;">
+
+    </div>
+  </div>
+
+  <!-- PROJECTS -->
+  <span id="hum"></span>
+  <span id="temp"></span>
+  <span id="gas"></span>
+  <span id="alldata"></span>
+  <div class="container py-5">
+    <div class="row">
+      <div class="col-12">
+        <h1 class="display-4 text-center">Data</h1>
+      </div>
+    </div>
+
+    <hr class="sm_hr">
+    <div class="row text-center py-3">
+
+      <div class="col-lg-6 col-md-8 mx-auto">
+        <p class="lead text-muted">
+          This section dives into some of my projects. It is separated into three parts, one with the Scientific and
+          Technological projects, one with the more artistic projects and the last relating to wandering and travelling.
+        </p>
+      </div>
+    </div>
+    
+    <div class="row">
+      <div class="btn-group" role="group" aria-label="Basic radio toggle button group">
+        <input type="radio" class="btn-check" name="btnradio" id="btnradio3" autocomplete="off" onclick="show3();"
+          checked>
+        <label class="btn btn-outline-dark" for="btnradio3">Humidity</label>
+
+        <input type="radio" class="btn-check" name="btnradio" id="btnradio4" onclick="show4();" autocomplete="off">
+        <label class="btn btn-outline-dark" for="btnradio4">Temperature</label>
+
+        <input type="radio" class="btn-check" name="btnradio" id="btnradio5" onclick="show5();" autocomplete="off">
+        <label class="btn btn-outline-dark" for="btnradio5">CO2 concentration</label>
+
+        <input type="radio" class="btn-check" name="btnradio" id="btnradio6" onclick="show6();" autocomplete="off">
+        <label class="btn btn-outline-dark" for="btnradio6">Explorations</label>
+      </div>
+
+      <div class="container" id="div3" class="">
+        <div class="row py-4">
+          <div id="chart1" class="chart"></div>
+          <div>{{description1}}</div>
+
+          <script type="text/javascript">
+              var graphs = {{graphJSON1 | safe}};
+              Plotly.plot('chart1',graphs,{});        
+          </script>
+        </div>
+      </div>
+
+      <div class="container" id="div4" class="hide">
+        <div class="row py-4">
+          <div id="chart2" class="chart"></div>
+          <div>{{description1}}</div>
+
+          <script type="text/javascript">
+              var graphs = {{graphJSON1 | safe}};
+              Plotly.plot('chart2',graphs,{});        
+          </script>
+        </div>
+      </div>
+
+      <div class="container" id="div5" class="hide">
+        <div class="row py-4">
+          <div id="chart3" class="chart"></div>
+          <div>{{description1}}</div>
+
+          <script type="text/javascript">
+              var graphs = {{graphJSON1 | safe}};
+              Plotly.plot('chart3',graphs,{});        
+          </script>
+        </div>
+      </div>
+
+      <div class="container" id="div6" class="hide">
+        <div class="row py-4">
+          <div id="chart4" class="chart"></div>
+          <div>{{description1}}</div>
+
+          <script type="text/javascript">
+              var graphs = {{graphJSON1 | safe}};
+              Plotly.plot('chart4',graphs,{});        
+          </script>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+  <div id="transi_4">
+    <div class="mask container-fuid" style="background-color: rgba(0, 0, 0, 0.5);height:20vh;">
+
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="container-fluid py-3">
+    <div class="">
+      <p class="text-center mb-1 small">Website built by Jonas Tjepkema in 2022 © All Rights Reserved</p>
+    </div>
+  </footer>
+
+
+  <!-- Script for About Me section -->
+  <script>
+    function show1() {
+      document.getElementById('div1').style.display = 'block';
+      document.getElementById('div2').style.display = 'none';
+      document.getElementById('div7').style.display = 'none';
+      document.getElementById("btnradio1").checked = true;
+    }
+    function show2() {
+      document.getElementById('div1').style.display = 'none';
+      document.getElementById('div2').style.display = 'block';
+      document.getElementById('div7').style.display = 'none';
+      document.getElementById("btnradio2").checked = true;
+    }
+    function show7() {
+      document.getElementById('div1').style.display = 'none';
+      document.getElementById('div2').style.display = 'none';
+      document.getElementById('div7').style.display = 'block';
+      document.getElementById("btnradio7").checked = true;
+    }
+
+
+    function show3() {
+      document.getElementById('div3').style.display = 'block';
+      document.getElementById('div4').style.display = 'none';
+      document.getElementById('div5').style.display = 'none';
+      document.getElementById('div6').style.display = 'none';
+      document.getElementById("btnradio3").checked = true;
+    }
+    function show4() {
+      document.getElementById('div3').style.display = 'none';
+      document.getElementById('div4').style.display = 'block';
+      document.getElementById('div5').style.display = 'none';
+      document.getElementById('div6').style.display = 'none';
+      document.getElementById("btnradio4").checked = true;
+    }
+    function show5() {
+      document.getElementById('div3').style.display = 'none';
+      document.getElementById('div4').style.display = 'none';
+      document.getElementById('div5').style.display = 'block';
+      document.getElementById('div6').style.display = 'none';
+      document.getElementById("btnradio5").checked = true;
+    }
+    function show6() {
+      document.getElementById('div3').style.display = 'none';
+      document.getElementById('div4').style.display = 'none';
+      document.getElementById('div5').style.display = 'none';
+      document.getElementById('div6').style.display = 'block';
+      document.getElementById("btnradio6").checked = true;
+    }
+    show1();
+    show3();
+  </script>
+
+</body>
+
+
+</body>
+
+</html>

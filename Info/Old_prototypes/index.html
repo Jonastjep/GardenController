@@ -1,0 +1,22 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body>
+
+<h2>Current System Status</h2>
+
+<p>Lighting status:   {{"ON" if status["light_status"] else "OFF"}}</p>
+<p>Fan status:        {{"ON" if status["fan_status"] else "OFF"}}</p>
+<p>Humidifier status: {{"ON" if status["hum_status"] else "OFF"}}</p>
+<p>Pump status:       {{"ON" if status["pump_status"] else "OFF"}}</p>
+
+<p>Exhaust fan status: {{status["exh_speed"]}}%</p>
+
+<form action="/modify_status">
+    <button type="submit">Modify Status</button>
+</form>
+
+</body>
+</html> 

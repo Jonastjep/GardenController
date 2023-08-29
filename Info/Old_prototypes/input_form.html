@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body>
+
+
+
+<form method="POST" onsubmit="prep_form()">
+
+    <input type="hidden" name="light_status" id="light_hid" value="0">
+    <div>
+        <label>Lights</label>
+        <label >
+            <input type="checkbox" id="light_chk" name="light_status" value="1">
+        </label>
+    </div>
+    
+    <input type="hidden" name="fan_status" id="fan_hid" value="0">
+    <div>
+        <label>Inside fans</label>
+        <label >
+            <input type="checkbox" id="fan_chk" name="fan_status" value="1">
+        </label>
+    </div>
+    
+    <input type="hidden" name="hum_status" id="hum_hid" value="0">
+    <div>
+        <label>Humidifier</label>
+        <label >
+            <input type="checkbox" id="hum_chk" name="hum_status" value="1">
+        </label>
+    </div>
+    
+    <input type="hidden" name="pump_status" id="pump_hid" value="0">
+    <div>
+        <label>Pump</label>
+        <label >
+            <input type="checkbox" id="pump_chk" name="pump_status" value="1">
+        </label>
+    </div>
+    
+    <script>
+    //This part sets the form to the previous settings (from the dictionnary)
+    if({{light_stat}}){
+        document.getElementById("light_chk").checked = true;
+    }
+    if({{fan_stat}}){
+        document.getElementById("fan_chk").checked = true;
+    }
+    if({{pump_stat}}){
+        document.getElementById("pump_chk").checked = true;
+    }
+    if({{hum_stat}}){
+        document.getElementById("hum_chk").checked = true;
+    }
+    
+    function unchk_box(elem1, elem2){
+        if(document.getElementById(elem1).checked) {
+            document.getElementById(elem2).disabled = true;
+         }
+        return false
+     }
+    
+    //makes unchecked checkbox also send data
+    function prep_form(){
+        unchk_box("light_chk", "light_hid");
+        unchk_box("fan_chk", "fan_hid");
+        unchk_box("pump_chk", "pump_hid");
+        unchk_box("hum_chk", "hum_hid");
+        return false;
+     }
+     </script>
+    
+    <!--<div><label>Message: <input type="text" name="message" value="{{msg}}"></label></div>-->
+    <div>
+        <label>Exhaust fan speed </label>
+        <select name="exh_speed" id="exh_speed">
+            <option value="{{exh_val}}" selected hidden>{{exh_val}}%</option>
+            <option value="0">0%</option>
+            <option value="20">20%</option>
+            <option value="40">40%</option>
+            <option value="60">60%</option>
+            <option value="80">80%</option>
+            <option value="100">100%</option>
+        </select>
+    </div>
+    <input type="submit" value="Submit">
+</form>
+
+</body>
+</html> 
