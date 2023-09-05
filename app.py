@@ -15,6 +15,8 @@ import status_setup
  
 app = Flask(__name__)
 
+serv_key = "C4Xw4LhlIu"
+
 # there are two available cycles represented by ints: 18h/6h is 18; 12h/12h is 12; 
 # the arduino code is made so that the number represents the duration of the first part of the cycle
 # as such, if the value is 4, you would have 4h/20h cycle.
@@ -112,9 +114,13 @@ def postJsonHandler():
     content = request.get_json()
     print(content)
 
-    add_data(55, 21, 35, 1134) #just test for data aquisition
-
-    return 'JSON posted'
+    if(content['key'] == serv_key):
+        add_data(content['sensor_data']["DHT_hum"], content['sensor_data']["DHT_temp"], content['sensor_data']["SOIL_hum"], content['sensor_data']["MQ135"]) #log sensor data into the database
+        return 'Data posted'
+    else:
+        print("Wrong server key. Cannot log data.")
+        return 'Wrong key.'
+    
 
 
 def add_data(DHT_hum, DHT_temp, SOIL_hum, MQ135_ppm):
