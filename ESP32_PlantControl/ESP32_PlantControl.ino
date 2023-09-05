@@ -246,7 +246,7 @@ void loop() {
 
       stage1_light = !stage1_light;
       
-      digitalWrite(lightRelPin, LOW);
+      digitalWrite(lightRelPin, HIGH);
     }
   } 
   else if(light_stat==1){
@@ -255,36 +255,46 @@ void loop() {
 
       stage1_light = !stage1_light;
       
-      digitalWrite(lightRelPin, HIGH);
+      digitalWrite(lightRelPin, LOW);
     }
   }
   else{ // if light_stat is OFF, then turn all light off and reset cycle
-    digitalWrite(lightRelPin, LOW);
+    digitalWrite(lightRelPin, HIGH);
     lastTime_lightCycle = millis();
   }
 
   // AIR HUMIDITY CYCLE
-  if(dht.readHumidity() < (hum_stat-5)){
-    digitalWrite(humRelPin, LOW);
+  if(hum_stat != 0){
+    if(dht.readHumidity() < (hum_stat-5)){
+      digitalWrite(humRelPin, LOW);
+    }
+    else if(dht.readHumidity() > (hum_stat+5) ){
+      digitalWrite(humRelPin, HIGH);
+    }
   }
-  else if(dht.readHumidity() > (hum_stat+5) ){
-    digitalWrite(humRelPin, HIGH);
+  else{
+    digitalWrite(humRelPin, HIGH); //if humidifier status OFF, hum off
   }
 
   //SOIL HUMIDITY CYCLE
-  if( ((100-((analogRead(soilPin)/4095.00)*100)) < pumpCyc) && !pumping && !soil_eq){
-    pumping = true;
-    lastTime_pumpCycle = millis();
-    digitalWrite(pumpRelPin, LOW); //turn pump on
+  if(pump_stat != 0){
+    if( ((100-((analogRead(soilPin)/4095.00)*100)) < pumpCyc) && !pumping && !soil_eq){
+      pumping = true;
+      lastTime_pumpCycle = millis();
+      digitalWrite(pumpRelPin, LOW); //turn pump on
+    }
+    if ((millis() - lastTime_pumpCycle) > timerDelay_pumpCycle && pumping) {
+      pumping = false;
+      soil_eq = true;
+      lastTime_eqCycle = millis();
+      digitalWrite(pumpRelPin, HIGH); //turn pump off
+    }
+    if ((millis() - lastTime_eqCycle) > timerDelay_eqCycle && soil_eq) {
+      soil_eq = false;
+    }
   }
-  if ((millis() - lastTime_pumpCycle) > timerDelay_pumpCycle && pumping) {
-    pumping = false;
-    soil_eq = true;
-    lastTime_eqCycle = millis();
-    digitalWrite(pumpRelPin, HIGH); //turn pump off
-  }
-  if ((millis() - lastTime_eqCycle) > timerDelay_eqCycle && soil_eq) {
-    soil_eq = false;
+  else{
+    digitalWrite(pumpRelPin, HIGH);
   }
 
 }

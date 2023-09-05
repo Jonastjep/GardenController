@@ -9,32 +9,18 @@ import plotly.express as px
 
 import sqlite3 as sq
 import os
+
+import status_setup
  
 app = Flask(__name__)
 
-status = {
-    "exh_stat":0,
-    "hum_stat": 0,
-    "aux1_stat": 0,
-    "aux2_stat": 0,
-    "light_stat": 1,
-    "pump_stat": 0,
-    "temp_rec": 1,
-    "soil_rec": 1,
-    "co2_rec": 1,
-    
-    # there are two available cycles represented by ints: 18h/6h is 18; 12h/12h is 12; 
-    # the arduino code is made so that the number represents the duration of the first part of the cycle
-    # as such, if the value is 4, you would have 4h/20h cycle.
-    # You can add more and then change the code in index.html and the arduino script.
-    "lightCyc": 18,
-    "pumpCyc": 20,
-    "aux1Cyc": 18,
-    "aux2Cyc": 18,
-    }
+# there are two available cycles represented by ints: 18h/6h is 18; 12h/12h is 12; 
+# the arduino code is made so that the number represents the duration of the first part of the cycle
+# as such, if the value is 4, you would have 4h/20h cycle.
+# You can add more and then change the code in index.html and the arduino script.
+status = status_setup.status
 
 #DATABASE CHECKS
-
 #checks if database folder exists
 folder_name = "sensor_database"
 if not os.path.exists(folder_name):
@@ -90,6 +76,11 @@ def index():
             status['pumpCyc'] = int(request.form.get('pumpCyc'))
             # status['aux1Cyc'] = int(request.form.get('aux1Cyc'))
             # status['aux2Cyc'] = int(request.form.get('aux2Cyc'))
+
+        f = open("status_setup.py","w")
+        f.write("status = " + str(status))
+        f.close()
+        print("Successfully updated status file.")
             
         return redirect('/#navigbar')
     
