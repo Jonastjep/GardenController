@@ -185,8 +185,8 @@
                 <tr>
                   <td>Lighting</td>
                   <td>
-                    {% if status["lightCyc"] == 1 %} 18/6
-                    {% elif status["lightCyc"] == 2 %} 12/12
+                    {% if status["lightCyc"] == 18 %} 18/6
+                    {% elif status["lightCyc"] == 12 %} 12/12
                     {% endif %}
                   </td>
                 </tr>
@@ -197,16 +197,16 @@
                 <tr>
                   <td>Aux. Fan 1</td>
                   <td>
-                    {% if status["aux1Cyc"] == 1 %} 18/6
-                    {% elif status["aux1Cyc"] == 2 %} 12/12
+                    {% if status["aux1Cyc"] == 18 %} 18/6 (FUNCTION DISABLED)
+                    {% elif status["aux1Cyc"] == 12 %} 12/12 (FUNCTION DISABLED)
                     {% endif %}
                   </td>
                 </tr>
                 <tr>
                   <td>Aux. Fan 2</td>
                   <td>
-                    {% if status["aux2Cyc"] == 1 %} 18/6
-                    {% elif status["aux1Cyc"] == 2 %} 12/12
+                    {% if status["aux2Cyc"] == 18 %} 18/6 (FUNCTION DISABLED)
+                    {% elif status["aux1Cyc"] == 12 %} 12/12 (FUNCTION DISABLED)
                     {% endif %}
                   </td>
                 </tr>
@@ -312,7 +312,7 @@
                   <tr>
                     <td>Pump</td>
                     <td>
-                      <select name="pump_stat" id="pump_stat">
+                      <select name="pump_stat" id="pump_stat" disabled>
                         <option value="{{status['pump_stat']}}" selected hidden>
                           {% if status["pump_stat"] != 0 %} {{status["pump_stat"]}}s
                           {% else %} OFF
@@ -391,12 +391,12 @@
                     <td>
                       <select name="lightCyc" id="lightCyc">
                         <option value="{{status['lightCyc']}}" selected hidden>
-                          {% if status["lightCyc"] == 1 %} 18/6
-                          {% elif status["lightCyc"] == 2 %} 12/12
+                          {% if status["lightCyc"] == 18 %} 18/6
+                          {% elif status["lightCyc"] == 12 %} 12/12
                           {% endif %}
                         </option>
-                        <option value="1">18/6</option>
-                        <option value="2">12/12</option>
+                        <option value="18">18/6</option>
+                        <option value="12">12/12</option>
                       </select>
                     </td>
                   </tr>
@@ -415,28 +415,28 @@
                   <tr>
                     <td>Auxillary Fan 1</td>
                     <td>
-                      <select name="aux1Cyc" id="aux1Cyc">
+                      <select name="aux1Cyc" id="aux1Cyc" disabled>
                         <option value="{{status['aux1Cyc']}}" selected hidden>
-                          {% if status["aux1Cyc"] == 1 %} 18/6
-                          {% elif status["aux1Cyc"] == 2 %} 12/12
+                          {% if status["aux1Cyc"] == 18 %} 18/6
+                          {% elif status["aux1Cyc"] == 12 %} 12/12
                           {% endif %}
                         </option>
-                        <option value="1">18/6</option>
-                        <option value="2">12/12</option>
+                        <option value="18">18/6</option>
+                        <option value="12">12/12</option>
                       </select>
                     </td>
                   </tr>
                   <tr>
                     <td>Aux. Fan 2</td>
                     <td>
-                      <select name="aux2Cyc" id="aux2Cyc">
+                      <select name="aux2Cyc" id="aux2Cyc" disabled>
                         <option value="{{status['aux2Cyc']}}" selected hidden>
-                          {% if status["aux2Cyc"] == 1 %} 18/6
-                          {% elif status["aux2Cyc"] == 2 %} 12/12
+                          {% if status["aux2Cyc"] == 18 %} 18/6
+                          {% elif status["aux2Cyc"] == 12 %} 12/12
                           {% endif %}
                         </option>
-                        <option value="1">18/6</option>
-                        <option value="2">12/12</option>
+                        <option value="18">18/6</option>
+                        <option value="12">12/12</option>
                       </select>
                     </td>
                   </tr>

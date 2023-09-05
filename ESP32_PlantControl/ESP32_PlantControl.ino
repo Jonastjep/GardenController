@@ -12,13 +12,15 @@
 #include <WiFi.h>
 #include <HTTPClient.h> 
 
+String serv_key = "C4Xw4LhlIu";
+
 const int lightRelPin = 26; // Light switching relay
 const int humRelPin = 25;   // Humidifier switching relay
 const int pumpRelPin = 33;  // Pump switching relay
 const int auxRelPin = 32;   // Auxilary fan switching relay
 
 const int exhFanPin = 18;  //exhaust fan pin
-const int pwmFanPin = 19;
+const int aux1FanPin = 19; //second aux fan (PWM)
 
 const int gasPin = 35;   //gas (CO2) sensor pin (analog)
 const int soilPin = 34; //soil sensor pin (analog)
@@ -31,23 +33,23 @@ MQ135 gasSensor = MQ135(gasPin, RZERO);
 //DHT SENSOR (HUM AND TEMP)
 #define DHTTYPE DHT11
 DHT dht(airPin, DHTTYPE);
+
+//millis conversions
+unsigned long Millis2min = 60000;
+unsigned long Millis2hrs = Millis2min * 60;
+unsigned long millisInDay = 86400000;
  
 // setting PWM properties
 const int freq = 25000;
-const int ledChannel = 0;
+const int ledChannel_exh = 0;
+const int ledChannel_aux1 = 1;
 const int resolution = 8;
+int exh_speed = 0;
+int exh_n_speed = 0;
+int aux1_speed = 0;
+int aux1_n_speed = 0;
 
-
-const char* ssid = "NetworkName";
-const char* password =  "Password";
-
-
-unsigned long lastTime = 0;
-// Timer set to 10 minutes (600000)
-//unsigned long timerDelay = 600000;
-// Set timer to 5 seconds (5000)
-unsigned long timerDelay = 1000;
-
+// JSON STATUS VARIABLES
 int exh_stat = 0;
 int hum_stat = 0;
 int aux1_stat = 0;
@@ -58,13 +60,38 @@ int temp_rec = 0;
 int soil_rec = 0;
 int co2_rec = 0;
 
-int lightCyc = 1;
+int lightCyc = 18;
 int pumpCyc = 20;
-int aux1Cyc = 1;
-int aux2Cyc = 1;
+int aux1Cyc = 18;
+int aux2Cyc = 18;
 
-int fan_speed = 0;
-int n_speed = 0;
+//WIFI SETTINGS
+const char* ssid = "NetworkName";
+const char* password =  "Password";
+
+//Timer for the section that verifies new inputs through GET request
+unsigned long timerDelay_GET = 500; //checks new input every half second
+unsigned long lastTime_GET = 0;
+
+//Timer for the section that sends sensor data with POST
+unsigned long timerDelay_POST = 1000*20; //sends data to server every minute
+unsigned long lastTime_POST = 0;
+
+//Timer for the section that regulates light cycle
+unsigned long lastTime_lightCycle = 0;
+bool stage1_light = true;
+
+//Timer for the section that regulates pump cycle
+unsigned long timerDelay_pumpCycle = 1000*3; //How long the pumping lasts
+unsigned long timerDelay_eqCycle = 1000*9;
+unsigned long lastTime_pumpCycle = 0;
+unsigned long lastTime_eqCycle = 0; //time to wait for the soil to wet before allowing more pumping
+bool pumping = false;
+bool soil_eq = false;
+
+//booleans for soil and air humidity
+bool air_humi = false;
+bool soil_humi = false;
 
 void check_status(int stat, int pin); //function declaration
 
@@ -95,39 +122,19 @@ void setup() {
 
   //FAN PWM 
   // configure LED PWM functionalitites
-  ledcSetup(ledChannel, freq, resolution);
+  ledcSetup(ledChannel_exh, freq, resolution);
+  ledcSetup(ledChannel_aux1, freq, resolution);
   // attach the channel to the GPIO to be controlled
-  ledcAttachPin(exhFanPin, ledChannel);
-  ledcWrite(ledChannel, fan_speed);
+  ledcAttachPin(exhFanPin, ledChannel_exh);
+  ledcAttachPin(aux1FanPin, ledChannel_aux1);
+
+  ledcWrite(ledChannel_exh, exh_speed);
+  ledcWrite(ledChannel_aux1, aux1_speed);
  
 }
 
 void loop() {
-  if ((millis() - lastTime) > timerDelay) {
-
-    //sensor tests
-
-    //CO2
-    float co2_value;
-    co2_value = gasSensor.getPPM();
-    Serial.print("CO2 ppm: ");
-    Serial.println(co2_value);
-
-    //SOIL HUM
-    // soil_value = ( 100 - ( (analogRead(soilPin)/4095.00) * 100 ) );
-    int soil_value;
-    soil_value = analogRead(soilPin);
-    Serial.print("Soil hum: ");
-    Serial.println(soil_value);
-
-    //AIR HUM
-    float h = dht.readHumidity();
-    // Read temperature as Celsius (the default)
-    float t = dht.readTemperature();
-    Serial.print(F("Humidity: "));
-    Serial.print(h);
-    Serial.print(F("%  Temperature: "));
-    Serial.println(t);
+  if ((millis() - lastTime_GET) > timerDelay_GET) {
 
     if ((WiFi.status() == WL_CONNECTED)) { 
   
@@ -168,13 +175,8 @@ void loop() {
           aux2Cyc = doc["aux2Cyc"];
 
 
-          n_speed = (int) map(doc["exh_stat"],0,100,0,255); // converts percentages to pwm values (8bit)
-          
-          Serial.print(light_stat);
-          Serial.print(aux2_stat);
-          Serial.print(hum_stat);
-          Serial.println(pump_stat);
-          Serial.println();
+          exh_n_speed = (int) map(doc["exh_stat"],0,100,0,255); // converts percentages to pwm values (8bit)
+          aux1_n_speed = (int) map(doc["aux1_stat"],0,100,0,255);
         }
   
       else {
@@ -184,21 +186,107 @@ void loop() {
       http.end();
     }
   
-    lastTime = millis();
+    check_status(aux2_stat, auxRelPin); //checks the state of the relay for the 2nd auxilary fan
+
+    //MODIFYING PWM FAN SPEEDS
+    if (exh_n_speed != exh_speed){
+      exh_speed = exh_n_speed;
+      ledcWrite(ledChannel_exh, exh_speed);
+      delay(15);
+    }
+
+    if (aux1_n_speed != aux1_speed){
+      aux1_speed = aux1_n_speed;
+      ledcWrite(ledChannel_aux1, aux1_speed);
+      delay(15);
+    }
+
+    lastTime_GET = millis();
+
   }
 
-  check_status(light_stat, lightRelPin);
-  check_status(aux2_stat, auxRelPin);
-  check_status(hum_stat, humRelPin);
-  check_status(pump_stat, pumpRelPin);
+  if ((millis() - lastTime_POST) > timerDelay_POST) {
+    if ((WiFi.status() == WL_CONNECTED)) { 
 
+      //CO2
+      float co2_value;
+      co2_value = gasSensor.getPPM();
+      //SOIL HUM
+      int soil_value;
+      soil_value = ( 100 - ( (analogRead(soilPin)/4095.00) * 100 ) );
+      // soil_value = analogRead(soilPin);
+      //AIR HUM
+      float h = dht.readHumidity();
+      float t = dht.readTemperature();
+  
+      HTTPClient http;
+  
+      http.begin("http://192.168.1.88:5000/sensor_data");                                   
 
-  if (n_speed != fan_speed){
-    fan_speed = n_speed;
-    ledcWrite(ledChannel, fan_speed);
-    delay(15);
-    // Serial.println("Speed modified.");
+      http.addHeader("Content-Type", "application/json");
+
+      String data_json;
+      data_json = "{\"key\": \"" + serv_key + "\",\"sensor_data\": {\"DHT_hum\": " + h + ", \"DHT_temp\": " + t + ", \"SOIL_hum\": " + soil_value + ", \"MQ135\": " + co2_value + "}}";
+      Serial.println(data_json);
+      int httpResponseCode = http.POST(data_json);
+    }
+    lastTime_POST = millis();
   }
+
+  // LIGHT CYCLE SETUP
+  // unsigned long intervalS1 = lightCyc * Millis2hrs;
+  // unsigned long intervalS2 = millisInDay - intervalS1;
+
+  unsigned long intervalS1 = lightCyc * 1000;
+  unsigned long intervalS2 = (24-lightCyc) * 1000;
+
+  if (stage1_light && (light_stat==1)){
+    if ((millis() - lastTime_lightCycle) > intervalS1){
+      lastTime_lightCycle = millis();
+
+      stage1_light = !stage1_light;
+      
+      digitalWrite(lightRelPin, LOW);
+    }
+  } 
+  else if(light_stat==1){
+    if ((millis() - lastTime_lightCycle) > intervalS2){
+      lastTime_lightCycle = millis();
+
+      stage1_light = !stage1_light;
+      
+      digitalWrite(lightRelPin, HIGH);
+    }
+  }
+  else{ // if light_stat is OFF, then turn all light off and reset cycle
+    digitalWrite(lightRelPin, LOW);
+    lastTime_lightCycle = millis();
+  }
+
+  // AIR HUMIDITY CYCLE
+  if(dht.readHumidity() < (hum_stat-5)){
+    digitalWrite(humRelPin, LOW);
+  }
+  else if(dht.readHumidity() > (hum_stat+5) ){
+    digitalWrite(humRelPin, HIGH);
+  }
+
+  //SOIL HUMIDITY CYCLE
+  if( ((100-((analogRead(soilPin)/4095.00)*100)) < pumpCyc) && !pumping && !soil_eq){
+    pumping = true;
+    lastTime_pumpCycle = millis();
+    digitalWrite(pumpRelPin, LOW); //turn pump on
+  }
+  if ((millis() - lastTime_pumpCycle) > timerDelay_pumpCycle && pumping) {
+    pumping = false;
+    soil_eq = true;
+    lastTime_eqCycle = millis();
+    digitalWrite(pumpRelPin, HIGH); //turn pump off
+  }
+  if ((millis() - lastTime_eqCycle) > timerDelay_eqCycle && soil_eq) {
+    soil_eq = false;
+  }
+
 }
 
 void check_status(int stat, int pin){

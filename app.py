@@ -17,18 +17,20 @@ status = {
     "hum_stat": 0,
     "aux1_stat": 0,
     "aux2_stat": 0,
-    "light_stat": 0,
+    "light_stat": 1,
     "pump_stat": 0,
-    "temp_rec": 0,
-    "soil_rec": 0,
-    "co2_rec": 0,
+    "temp_rec": 1,
+    "soil_rec": 1,
+    "co2_rec": 1,
     
-    # there are two available cycles represented by ints: 18h/6h is 1; 12h/12h is 2; 
+    # there are two available cycles represented by ints: 18h/6h is 18; 12h/12h is 12; 
+    # the arduino code is made so that the number represents the duration of the first part of the cycle
+    # as such, if the value is 4, you would have 4h/20h cycle.
     # You can add more and then change the code in index.html and the arduino script.
-    "lightCyc": 1,
+    "lightCyc": 18,
     "pumpCyc": 20,
-    "aux1Cyc": 1,
-    "aux2Cyc": 1,
+    "aux1Cyc": 18,
+    "aux2Cyc": 18,
     }
 
 #DATABASE CHECKS
@@ -78,7 +80,7 @@ def index():
             status['aux2_stat'] = int(request.form.get('aux2_stat'))
             status['light_stat'] = int(request.form.get('light_stat'))
             status['hum_stat'] = int(request.form.get('hum_stat'))
-            status['pump_stat'] = int(request.form.get('pump_stat'))
+            # status['pump_stat'] = int(request.form.get('pump_stat'))
             status['temp_rec'] = int(request.form.get('temp_rec'))
             status['soil_rec'] = int(request.form.get('soil_rec'))
             status['co2_rec'] = int(request.form.get('co2_rec'))
@@ -86,8 +88,8 @@ def index():
         elif request.form["form_id"] == "cycles":
             status['lightCyc'] = int(request.form.get('lightCyc'))
             status['pumpCyc'] = int(request.form.get('pumpCyc'))
-            status['aux1Cyc'] = int(request.form.get('aux1Cyc'))
-            status['aux2Cyc'] = int(request.form.get('aux2Cyc'))
+            # status['aux1Cyc'] = int(request.form.get('aux1Cyc'))
+            # status['aux2Cyc'] = int(request.form.get('aux2Cyc'))
             
         return redirect('/#navigbar')
     
@@ -111,6 +113,12 @@ def index():
 def get_data():
     add_data(55, 21, 35, 1134)
     return json.dumps(status)
+
+@app.route('/sensor_data', methods = ['POST'])
+def postJsonHandler():
+    content = request.get_json()
+    print (content)
+    return 'JSON posted'
 
 
 def add_data(DHT_hum, DHT_temp, SOIL_hum, MQ135_ppm):
