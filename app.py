@@ -2,6 +2,7 @@ import errno
 from flask import Flask, request, render_template, redirect
 import sys
 import json
+from pprint import pprint
 
 import pandas as pd
 import plotly
@@ -59,14 +60,14 @@ con.close()
 def index():
     # handle the POST request
     if request.method == 'POST':
-        print(request.form, file=sys.stdout)
+        
         if request.form["form_id"] == "hardware":
             status['exh_stat'] = int(request.form.get('exh_stat'))
             status['aux1_stat'] = int(request.form.get('aux1_stat'))
             status['aux2_stat'] = int(request.form.get('aux2_stat'))
             status['light_stat'] = int(request.form.get('light_stat'))
             status['hum_stat'] = int(request.form.get('hum_stat'))
-            # status['pump_stat'] = int(request.form.get('pump_stat'))
+            status['pump_stat'] = int(request.form.get('pump_stat'))
             status['temp_rec'] = int(request.form.get('temp_rec'))
             status['soil_rec'] = int(request.form.get('soil_rec'))
             status['co2_rec'] = int(request.form.get('co2_rec'))
@@ -77,8 +78,10 @@ def index():
             # status['aux1Cyc'] = int(request.form.get('aux1Cyc'))
             # status['aux2Cyc'] = int(request.form.get('aux2Cyc'))
 
+        #UPDATE THE STATUS FILE TO KEEP CURRENT SETTINGS
         f = open("status_setup.py","w")
-        f.write("status = " + str(status))
+        f.write("status = ")
+        pprint(status, f, sort_dicts=False)
         f.close()
         print("Successfully updated status file.")
             
@@ -102,13 +105,15 @@ def index():
 
 @app.route('/get_data')
 def get_data():
-    add_data(55, 21, 35, 1134)
     return json.dumps(status)
 
 @app.route('/sensor_data', methods = ['POST'])
 def postJsonHandler():
     content = request.get_json()
-    print (content)
+    print(content)
+
+    add_data(55, 21, 35, 1134) #just test for data aquisition
+
     return 'JSON posted'
 
 
