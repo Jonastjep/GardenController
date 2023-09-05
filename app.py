@@ -1,3 +1,4 @@
+import errno
 from flask import Flask, request, render_template, redirect
 import sys
 import json
@@ -5,6 +6,9 @@ import json
 import pandas as pd
 import plotly
 import plotly.express as px
+
+import sqlite3 as sq
+import os
  
 app = Flask(__name__)
 
@@ -26,6 +30,42 @@ status = {
     "aux1Cyc": 1,
     "aux2Cyc": 1,
     }
+
+#DATABASE CHECKS
+
+#checks if database folder exists
+folder_name = "sensor_database"
+if not os.path.exists(folder_name):
+    os.mkdir(folder_name)
+    print(f"Created folder '{folder_name}'.")
+
+#creates a database if one doesn't exist
+db_path = f'{folder_name}/SensorData.db'
+con = None
+try:
+    con = sq.connect(db_path)
+    print("Database exists or was created.")
+except sq.Error as e:
+    print(errno)
+finally:
+    if con:
+        con.close()
+
+#verifies that the tables are correctly made
+con = sq.connect(db_path)
+cur = con.cursor() 
+
+try:
+    cur.execute("SELECT * FROM sensor_data")
+    # storing the data in a list
+    data_list = cur.fetchall() 
+except:
+    cur.execute("CREATE TABLE sensor_data(timestamp DATETIME, DHT_temp NUMERIC, DHT_hum NUMERIC, SOIL_hum NUMERIC, MQ135_ppm NUMERIC)")
+    print("Created sensor table.")
+
+con.commit()
+con.close()
+    
  
 @app.route("/", methods=['GET', 'POST'])
 def index():
@@ -69,11 +109,23 @@ def index():
 
 @app.route('/get_data')
 def get_data():
+    add_data(55, 21, 35, 1134)
     return json.dumps(status)
+
+
+def add_data(DHT_hum, DHT_temp, SOIL_hum, MQ135_ppm):
+    con = sq.connect(db_path)
+    curs = con.cursor()
+
+    curs.execute("INSERT INTO sensor_data values(datetime('now'), (?),(?),(?),(?))", (DHT_temp, DHT_hum,SOIL_hum,MQ135_ppm))
+
+    con.commit()
+    con.close()
+    
 
 
 if __name__ == '__main__':
     # run app in debug mode on port 5000
-    app.run(debug=True, port=5000, host="0.0.0.0")
+    app.run(port=5000, host="0.0.0.0")
     
     

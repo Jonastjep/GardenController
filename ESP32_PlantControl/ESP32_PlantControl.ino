@@ -18,6 +18,8 @@ const int pumpRelPin = 33;  // Pump switching relay
 const int auxRelPin = 32;   // Auxilary fan switching relay
 
 const int exhFanPin = 18;  //exhaust fan pin
+const int pwmFanPin = 19;
+
 const int gasPin = 35;   //gas (CO2) sensor pin (analog)
 const int soilPin = 34; //soil sensor pin (analog)
 const int airPin = 4;
@@ -36,8 +38,8 @@ const int ledChannel = 0;
 const int resolution = 8;
 
 
-const char* ssid = "***REMOVED***";
-const char* password =  "***REMOVED***";
+const char* ssid = "NetworkName";
+const char* password =  "Password";
 
 
 unsigned long lastTime = 0;
