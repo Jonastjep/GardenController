@@ -12,10 +12,9 @@ import sqlite3 as sq
 import os
 
 import status_setup
- 
-app = Flask(__name__)
 
-serv_key = "C4Xw4LhlIu"
+
+app = Flask(__name__)
 
 # there are two available cycles represented by ints: 18h/6h is 18; 12h/12h is 12; 
 # the arduino code is made so that the number represents the duration of the first part of the cycle
@@ -56,8 +55,12 @@ except:
 
 con.commit()
 con.close()
-    
- 
+
+serv_key = "C4Xw4LhlIu"
+
+#the number of datapoints shown on the graphs
+form_vals = {"graph_data_pts": 20}
+
 @app.route("/", methods=['GET', 'POST'])
 def index():
     # handle the POST request
@@ -80,30 +83,57 @@ def index():
             # status['aux1Cyc'] = int(request.form.get('aux1Cyc'))
             # status['aux2Cyc'] = int(request.form.get('aux2Cyc'))
 
+        elif request.form["form_id"] == "graphs":
+            val = request.form.get('nb_datapts')
+            print(val)
+            if val.isdigit():
+                form_vals['graph_data_pts'] = int(val)
+
+
         #UPDATE THE STATUS FILE TO KEEP CURRENT SETTINGS
         f = open("status_setup.py","w")
         f.write("status = ")
         pprint(status, f, sort_dicts=False)
         f.close()
         print("Successfully updated status file.")
-            
-        return redirect('/#navigbar')
+
+        if request.form["form_id"] == "graphs":
+            return redirect('/#hum')
+        else:
+            return redirect('/#navigbar')
     
-    df = pd.DataFrame({
-        "Fruit": ["Apples", "Oranges", "Bananas", "Apples", "Oranges", "Bananas"],
-        "Amount": [4, 1, 2, 2, 4, 5],
-        "City": ["SF", "SF", "SF", "Montreal", "Montreal", "Montreal"]
-    })
+    cnx = sq.connect(db_path)
+    df = pd.read_sql_query(f"SELECT * FROM sensor_data ORDER BY timestamp DESC LIMIT {form_vals['graph_data_pts']}", cnx)
 
-    fig1 = px.bar(df, x="Fruit", y="Amount", color="City", barmode="group")
-    graphJSON1 = json.dumps(fig1, cls=plotly.utils.PlotlyJSONEncoder)
-    header1="Fruit in North America"
-    description1 = """
-    A academic study of the number of apples, oranges and bananas in the cities of
-    San Francisco and Montreal would probably not come up with this chart.
-    """
+    print(df)
 
-    return render_template("index.html", status=status, graphJSON1=graphJSON1, description1=description1)
+    fig_hum = px.line(df, x="timestamp", y=["DHT_hum","SOIL_hum"])
+    graphJSON_hum = json.dumps(fig_hum, cls=plotly.utils.PlotlyJSONEncoder)
+    description_hum = """Plot of air and soil humidity in the grow chamber/pot."""
+
+    fig_temp = px.line(df, x="timestamp", y="DHT_temp")
+    graphJSON_temp = json.dumps(fig_temp, cls=plotly.utils.PlotlyJSONEncoder)
+    description_temp = """Plot of air temperature in the grow chamber."""
+
+    fig_ppm = px.line(df, x="timestamp", y="MQ135_ppm")
+    graphJSON_ppm = json.dumps(fig_ppm, cls=plotly.utils.PlotlyJSONEncoder)
+    description_ppm = """Plot of the CO2 ppm in the grow chamber."""
+
+    fig_all = px.line(df, x="timestamp", y=["DHT_hum","SOIL_hum","DHT_temp","MQ135_ppm"])
+    graphJSON_all = json.dumps(fig_all, cls=plotly.utils.PlotlyJSONEncoder)
+    description_all = """Plot of all stored sensor data (seen in the other plots) together."""
+
+    plot_dict = {'hum':{'data':graphJSON_hum, 'descr': description_hum},
+                 'temp':{'data':graphJSON_temp, 'descr': description_temp},
+                 'ppm':{'data':graphJSON_ppm, 'descr': description_ppm},
+                 'all':{'data':graphJSON_all, 'descr': description_all},
+                 }
+    
+    return render_template("index.html", 
+                           status=status, 
+                           plot_dict=plot_dict,
+                           nb_datapts=form_vals['graph_data_pts'], 
+                           )
 
 @app.route('/get_data')
 def get_data():
@@ -136,6 +166,6 @@ def add_data(DHT_hum, DHT_temp, SOIL_hum, MQ135_ppm):
 
 if __name__ == '__main__':
     # run app in debug mode on port 5000
-    app.run(port=5000, host="0.0.0.0")
+    app.run(port=5000, host="0.0.0.0", debug=True)
     
     

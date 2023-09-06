@@ -476,8 +476,77 @@
         </p>
       </div>
     </div>
+
+    <form method="POST">
+      <input type="hidden" name="form_id" value="graphs">
+      <div class="d-flex justify-content-center">
+        <div class="input-group w-auto">
+            <input
+              type="text"
+              class="form-control"
+              name = "nb_datapts"
+              id="nb_datapts"
+              pattern="\d*"
+              placeholder="{{nb_datapts}}"
+              aria-label="{{nb_datapts}}"
+              aria-describedby="button-addon1"
+            >
+            <button class="btn btn-primary" type="submit" id="button-addon1" data-mdb-ripple-color="dark">
+                Submit
+            </button>
+        </div>
+    </div>
+    </form>
     
-    <div class="row">
+    <div class="row text-center">
+      <div class="container" id="div3" class="">
+        <div class="row py-4">
+          <div id="chart1" class="chart"></div>
+          <div><p>{{plot_dict['hum']['descr']}}</p></div>
+
+          <script type="text/javascript">
+              var graphs = {{plot_dict['hum']['data'] | safe}};
+              Plotly.plot('chart1',graphs,{});        
+          </script>
+        </div>
+      </div>
+
+      <div class="container" id="div4" class="hide">
+        <div class="row py-4">
+          <div id="chart2" class="chart"></div>
+          <div>{{plot_dict['temp']['descr']}}</div>
+
+          <script type="text/javascript">
+              var graphs = {{plot_dict['temp']['data'] | safe}};
+              Plotly.plot('chart2',graphs,{});        
+          </script>
+        </div>
+      </div>
+
+      <div class="container" id="div5" class="hide">
+        <div class="row py-4">
+          <div id="chart3" class="chart"></div>
+          <div>{{plot_dict['ppm']['descr']}}</div>
+
+          <script type="text/javascript">
+              var graphs = {{plot_dict['ppm']['data'] | safe}};
+              Plotly.plot('chart3',graphs,{});        
+          </script>
+        </div>
+      </div>
+
+      <div class="container" id="div6" class="hide">
+        <div class="row py-4">
+          <div id="chart4" class="chart"></div>
+          <div>{{plot_dict['all']['descr']}}</div>
+
+          <script type="text/javascript">
+              var graphs = {{plot_dict['all']['data'] | safe}};
+              Plotly.plot('chart4',graphs,{});        
+          </script>
+        </div>
+      </div>
+
       <div class="btn-group" role="group" aria-label="Basic radio toggle button group">
         <input type="radio" class="btn-check" name="btnradio" id="btnradio3" autocomplete="off" onclick="show3();"
           checked>
@@ -490,55 +559,7 @@
         <label class="btn btn-outline-dark" for="btnradio5">CO2 concentration</label>
 
         <input type="radio" class="btn-check" name="btnradio" id="btnradio6" onclick="show6();" autocomplete="off">
-        <label class="btn btn-outline-dark" for="btnradio6">Explorations</label>
-      </div>
-
-      <div class="container" id="div3" class="">
-        <div class="row py-4">
-          <div id="chart1" class="chart"></div>
-          <div>{{description1}}</div>
-
-          <script type="text/javascript">
-              var graphs = {{graphJSON1 | safe}};
-              Plotly.plot('chart1',graphs,{});        
-          </script>
-        </div>
-      </div>
-
-      <div class="container" id="div4" class="hide">
-        <div class="row py-4">
-          <div id="chart2" class="chart"></div>
-          <div>{{description1}}</div>
-
-          <script type="text/javascript">
-              var graphs = {{graphJSON1 | safe}};
-              Plotly.plot('chart2',graphs,{});        
-          </script>
-        </div>
-      </div>
-
-      <div class="container" id="div5" class="hide">
-        <div class="row py-4">
-          <div id="chart3" class="chart"></div>
-          <div>{{description1}}</div>
-
-          <script type="text/javascript">
-              var graphs = {{graphJSON1 | safe}};
-              Plotly.plot('chart3',graphs,{});        
-          </script>
-        </div>
-      </div>
-
-      <div class="container" id="div6" class="hide">
-        <div class="row py-4">
-          <div id="chart4" class="chart"></div>
-          <div>{{description1}}</div>
-
-          <script type="text/javascript">
-              var graphs = {{graphJSON1 | safe}};
-              Plotly.plot('chart4',graphs,{});        
-          </script>
-        </div>
+        <label class="btn btn-outline-dark" for="btnradio6">All data</label>
       </div>
 
     </div>
